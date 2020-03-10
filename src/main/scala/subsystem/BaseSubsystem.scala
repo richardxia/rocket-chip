@@ -40,24 +40,6 @@ abstract class BareSubsystemModuleImp[+L <: BareSubsystem](_outer: L) extends La
   println(outer.dts)
 }
 
-/** These traits are intended to make it possible to configure to which
-  * buses optional devices are attached, even after a subsystem has been instantiated.
-  * Consider them experimental for now.
-  */
-
-trait Attachable extends LazyScope
-    with HasLogicalTreeNode
-    with HasBusAttachmentFunction { this: LazyModule =>
-  implicit val p: Parameters
-  implicit val asyncClockGroupsNode: ClockGroupEphemeralNode
-  val ibus: InterruptBusWrapper
-}
-
-trait HasBusAttachmentFunction {
-  type BusAttachmentFunction = PartialFunction[BaseSubsystemBusAttachment, TLBusWrapper]
-  def attach: BusAttachmentFunction
-}
-
 /** This trait contains the cases matched in baseBusAttachmentFunc below.
   * Extend/override them to offer novel attachment locations in subclasses of BaseSubsystem.
   */
@@ -82,14 +64,6 @@ abstract class BaseSubsystem(implicit p: Parameters) extends BareSubsystem
   val fbus = LazyModule(new FrontBus(p(FrontBusKey)))
   val mbus = LazyModule(new MemoryBus(p(MemoryBusKey)))
   val cbus = LazyModule(new PeripheryBus(p(ControlBusKey), "subsystem_cbus"))
-
-  def attach: BusAttachmentFunction = {
-    case SBUS => sbus
-    case PBUS => pbus
-    case FBUS => fbus
-    case MBUS => mbus
-    case CBUS => cbus
-  }
 
   implicit val asyncClockGroupsNode = p(AsyncClockGroupsKey)
   p(SubsystemDriveAsyncClockGroupsKey).foreach(_.driveFromImplicitClock(asyncClockGroupsNode))
