@@ -38,13 +38,17 @@ abstract class BaseSubsystem(implicit p: Parameters) extends BareSubsystem
 
   override val module: BaseSubsystemModuleImp[BaseSubsystem]
 
+  // Concrete attachment points for PRCI-related signals.
   val ibus = new InterruptBusWrapper()
   implicit val asyncClockGroupsNode = p(AsyncClockGroupsKey)
   p(SubsystemDriveAsyncClockGroupsKey).foreach(_.driveFromImplicitClock(asyncClockGroupsNode))
 
+  // Find the topology configuration for the TL buses located in this subsystem.
+  // Calling these functions populates tlBusWrapperLocationMap and connects the locations to each other.
   val location = HierarchicalLocation("InSubsystem")
-  p(TLNetworkTopologyLocated(location.name)).foreach(_.instantiate(this))
-  p(TLNetworkTopologyLocated(location.name)).foreach(_.connect(this))
+  val topology = p(TLNetworkTopologyLocated(location.name))
+  topology.foreach(_.instantiate(this))
+  topology.foreach(_.connect(this))
 
   // TODO where should this happen; must there always be an "sbus"?
   locateTLBusWrapper(SBUS).clockGroupNode := asyncClockGroupsNode
