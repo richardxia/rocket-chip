@@ -570,6 +570,8 @@ class TLSlavePortParameters private(
     })
   }
 
+  def infoString = "Manager Port Beatbytes = " + beatBytes + "\n" + "Manager Port MinLatency = " + minLatency + "\n\n" + managers.map(_.infoString).mkString
+
   def v1copy(
     managers:   Seq[TLSlaveParameters] = slaves,
     beatBytes:  Int = -1,
@@ -634,8 +636,6 @@ object TLSlavePortParameters {
       endSinkId    = endSinkId,
       minLatency   = minLatency)
   }
-
-  def infoString = "Manager Port Beatbytes = " + beatBytes + "\n" + "Manager Port MinLatency = " + minLatency + "\n\n" + managers.map(_.infoString).mkString
 
 }
 
